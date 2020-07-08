@@ -41,7 +41,6 @@ def on_message(client, userdata, msg):
         data_in_dict = json.loads(msg.payload)
         img_array = np.asarray(data_in_dict['pred_img_array_list']).astype(np.uint8)
         im = Image.fromarray(img_array)
-        print(img_array)
         im.save('./inference/output/test.jpg', 'JPEG')
         pass
 

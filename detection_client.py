@@ -57,8 +57,8 @@ def on_message(client, userdata, msg):
 
         # Run YOLOv5 detection
         data_out_dict = {}
-        pred_img_array = detect('./inference/output', './inference/image', './weights/last_yolov5s_results.pt'
-            , view_img=False, save_txt=False, imgsz=640, device='cpu', conf_thres=0.4, iou_thres=0.5, classes=2, agnostic_nms=True, augment=True)
+        pred_img_array = detect('./inference/output', './inference/image', './weights/yolov5s.pt'
+            , view_img=False, save_txt=False, imgsz=640, device='cpu', conf_thres=0.4, iou_thres=0.5, classes=None, agnostic_nms=True, augment=True)
         # convert BGR back to RGB
         pred_img_array = pred_img_array[:, :, ::-1]
         data_out_dict['pred_img_array_list'] = pred_img_array.tolist()
