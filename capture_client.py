@@ -13,8 +13,8 @@ import cv2
 broker = "localhost"
 port = 1883
 keepalive = 60
-#keepalive: maximum period in seconds allowed between communications with the broker. 
-#If no other messages are being exchanged, this controls the rate at which the client will send ping messages to the broker
+# keepalive: maximum period in seconds allowed between communications with the broker. 
+# if no other messages are being exchanged, this controls the rate at which the client will send ping messages to the broker
 
 ###### define callbacks ################################################################  
 def on_subscribe(client, userdata, mid, granted_qos):
@@ -42,7 +42,7 @@ def on_message(client, userdata, msg):
         img_array = np.asarray(data_dict['img_array_list'])
         img_array = (img_array * 255).round().astype(np.uint8)
         im = Image.fromarray(img_array)
-        im.save('./current_pred.png', 'PNG')
+        im.save('./current/pred.png', 'PNG')
 
 #instantiate an object of the mqtt client
 client = paho.Client("capture", clean_session= False, userdata=None) 

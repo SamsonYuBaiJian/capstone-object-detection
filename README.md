@@ -7,3 +7,6 @@ YOLOv5 server for SUTD Capstone project
 ## References
 - http://www.steves-internet-guide.com/install-mosquitto-linux/
 - https://www.e-consystems.com/blog/camera/how-to-access-cameras-using-opencv-with-python/
+
+## Credits
+Much credit to the amazing YOLOv5 team over at Ultralytics!

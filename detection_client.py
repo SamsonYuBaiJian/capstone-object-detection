@@ -8,8 +8,11 @@ import json
 broker = "localhost"
 port = 1883
 keepalive = 60
-#keepalive: maximum period in seconds allowed between communications with the broker. 
-#If no other messages are being exchanged, this controls the rate at which the client will send ping messages to the broker
+# keepalive: maximum period in seconds allowed between communications with the broker. 
+# if no other messages are being exchanged, this controls the rate at which the client will send ping messages to the broker
+
+# load model
+
 
 ###### define callbacks ################################################################  
 def on_subscribe(client, userdata, mid, granted_qos):
@@ -36,7 +39,7 @@ def on_message(client, userdata, msg):
         img_array = np.asarray(data_dict['img_array_list'])
         img_array = (img_array * 255).round().astype(np.uint8)
         im = Image.fromarray(img_array)
-        im.save('./current.png', 'PNG')
+        im.save('./current/input.png', 'PNG')
 
         # TODO: Run YOLOv5 detection
         client.publish('capstone/detection', msg.payload)
