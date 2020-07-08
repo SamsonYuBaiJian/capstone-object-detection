@@ -38,11 +38,12 @@ def on_message(client, userdata, msg):
     
     if str(msg.topic) == "capstone/detection":
         # TODO: Do robot stuff
-        data_dict = json.loads(msg.payload)
-        img_array = np.asarray(data_dict['img_array_list'])
-        img_array = (img_array * 255).round().astype(np.uint8)
+        data_in_dict = json.loads(msg.payload)
+        img_array = np.asarray(data_in_dict['pred_img_array_list']).astype(np.uint8)
         im = Image.fromarray(img_array)
-        im.save('./current/pred.png', 'PNG')
+        print(img_array)
+        im.save('./inference/output/test.jpg', 'JPEG')
+        pass
 
 #instantiate an object of the mqtt client
 client = paho.Client("capture", clean_session= False, userdata=None) 
@@ -68,10 +69,10 @@ client.connect(broker, port, keepalive)
 
 def capture():
     # _, frame = cap.read()
-    frame = plt.imread('https://icatcare.org/app/uploads/2018/07/Thinking-of-getting-a-cat.png')
-    data_dict = {'img_array_list': frame.tolist(), 'img_dim': str(frame.shape)}
-    data_json = json.dumps(data_dict)
-    client.publish('capstone/capture', data_json)
+    frame = plt.imread('/mnt/c/Users/samso/Desktop/geo640_p.jpg', format='jpeg')
+    data_out_dict = {'input_img_array_list': frame.tolist(), 'input_img_dim': str(frame.shape)}
+    data_out_json = json.dumps(data_out_dict)
+    client.publish('capstone/capture', data_out_json)
     time.sleep(5)
 
 # client.loop_start()

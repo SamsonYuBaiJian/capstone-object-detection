@@ -1,5 +1,7 @@
 import paho.mqtt.client as paho
+import time
 from threading import Thread
+import sys
 from PIL import Image
 import numpy as np
 import json
@@ -12,7 +14,19 @@ keepalive = 60
 # if no other messages are being exchanged, this controls the rate at which the client will send ping messages to the broker
 
 # load model
-
+with open('settings.txt', 'r') as f:
+    settings_dict = {}
+    line = f.readline()
+    while line:
+        line = line.split('=')
+        key = line[0]
+        value = line[1]
+        settings_dict[key] = value
+        line = f.readline()
+    f.close()
+# add path of YOLOv5 to sys.path for easier loading of libraries
+sys.path.append(settings_dict['yolov5_dir'])
+from detect import detect
 
 ###### define callbacks ################################################################  
 def on_subscribe(client, userdata, mid, granted_qos):
@@ -35,14 +49,22 @@ def on_message(client, userdata, msg):
     + " " + "with QoS " + str(msg.qos))
     
     if str(msg.topic) == "capstone/capture":
-        data_dict = json.loads(msg.payload)
-        img_array = np.asarray(data_dict['img_array_list'])
-        img_array = (img_array * 255).round().astype(np.uint8)
+        data_in_dict = json.loads(msg.payload)
+        img_array = np.asarray(data_in_dict['input_img_array_list']).astype(np.uint8)
+        # img_array = (img_array * 255).round().astype(np.uint8)
         im = Image.fromarray(img_array)
-        im.save('./current/input.png', 'PNG')
+        im.save('./inference/image/input.jpg', 'JPEG')
 
-        # TODO: Run YOLOv5 detection
-        client.publish('capstone/detection', msg.payload)
+        # Run YOLOv5 detection
+        data_out_dict = {}
+        pred_img_array = detect('./inference/output', './inference/image', './weights/last_yolov5s_results.pt'
+            , view_img=False, save_txt=False, imgsz=640, device='cpu', conf_thres=0.4, iou_thres=0.5, classes=2, agnostic_nms=True, augment=True)
+        # convert BGR back to RGB
+        pred_img_array = pred_img_array[:, :, ::-1]
+        data_out_dict['pred_img_array_list'] = pred_img_array.tolist()
+        data_out_json = json.dumps(data_out_dict)
+        time.sleep(5)
+        client.publish('capstone/detection', data_out_json)
 
 #instantiate an object of the mqtt client
 client = paho.Client("detection", clean_session= False, userdata=None) 
@@ -60,5 +82,9 @@ client.reconnect_delay_set(min_delay=1, max_delay=180)
 
 #establish connection to the broker
 client.connect(broker, port, keepalive)
+
+# pred_img_array = detect('./inference/output', './inference/image', './weights/last_yolov5s_results.pt'
+            # , view_img=False, save_txt=False, imgsz=640, device='cpu', conf_thres=0.4, iou_thres=0.5, classes=2, agnostic_nms=True, augment=True)
+# print(pred_img_array)
 
 client.loop_forever()

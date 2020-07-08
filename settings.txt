@@ -1,0 +1,1 @@
+yolov5_dir=/mnt/c/Users/samso/Documents/github/SamsonYuBaiJian/yolov5
