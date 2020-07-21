@@ -6,6 +6,7 @@ from PIL import Image
 import numpy as np
 import json
 from collections import defaultdict
+import ast
 
 # broker = "10.12.108.241"
 broker = "localhost"
@@ -14,10 +15,7 @@ keepalive = 60
 # keepalive: maximum period in seconds allowed between communications with the broker. 
 # if no other messages are being exchanged, this controls the rate at which the client will send ping messages to the broker
 
-# set map of supermarket
-supermarket_map = {0: 'banana', 1: 'apple', 2: 'eclipse', 3: 'other'}
-
-# load model
+# load settings
 with open('settings.txt', 'r') as f:
     settings_dict = {}
     line = f.readline()
@@ -25,9 +23,14 @@ with open('settings.txt', 'r') as f:
         line = line.split('=')
         key = line[0]
         value = line[1]
+        value = value.split('\n')[0]
         settings_dict[key] = value
         line = f.readline()
     f.close()
+
+# set map of supermarket
+supermarket_map = ast.literal_eval(settings_dict['map'])
+
 # add path of YOLOv5 to sys.path for easier loading of libraries
 sys.path.append(settings_dict['yolov5_dir'])
 from detect import detect
@@ -57,15 +60,13 @@ def on_message(client, userdata, msg):
         img_array = np.asarray(data_in_dict['input_img_array_list']).astype(np.uint8)
         # img_array = (img_array * 255).round().astype(np.uint8)
         im = Image.fromarray(img_array)
-        im.save('./inference/inputs/image.jpg', 'JPEG')
+        im.save(settings_dict['input_folder'] + 'image.jpg', 'JPEG')
 
         # Run YOLOv5 detection
-        data_out_dict = {}
-        bboxes = detect('./inference/outputs', './inference/inputs', './weights/yolov5s.pt'
+        bboxes = detect(settings_dict['output_folder'], settings_dict['input_folder'], './weights/yolov5s.pt'
             , view_img=False, imgsz=640, device='cpu', conf_thres=0.4, iou_thres=0.5, classes=None, agnostic_nms=True, augment=True)
         
         # TODO: return (misplaced: true/false, if true: {misplaced_item1: [xyxy1, xyxy2]})
-        data_out_dict['test'] = bboxes
         location = data_in_dict['location']
         misplaced_xyxy = {}
         misplaced = False
@@ -74,9 +75,9 @@ def on_message(client, userdata, msg):
                 misplaced = True
                 misplaced_xyxy[key] = bboxes[key]
         if misplaced:
-            data_out_json = json.dumps((True, supermarket_map[location], misplaced_xyxy))
+            data_out_json = json.dumps(("Actual: " + supermarket_map[location], True, misplaced_xyxy))
         else:
-            data_out_json = json.dumps((False, supermarket_map[location]))
+            data_out_json = json.dumps(("Actual: " + supermarket_map[location], False))
         client.publish('capstone/detection', data_out_json)
 
 #instantiate an object of the mqtt client

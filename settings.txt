@@ -1,1 +1,4 @@
 yolov5_dir=/mnt/c/Users/samso/Documents/github/SamsonYuBaiJian/yolov5
+map={0: 'banana', 1: 'apple', 2: 'eclipse', 3: 'other'}
+input_folder=./inference/inputs/
+output_folder=./inference/outputs/
