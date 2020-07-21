@@ -1,10 +1,15 @@
-# capstone-object-detection
+# Capstone Object Detection
 YOLOv5 server for SUTD Capstone project
 
 ## Setup
-`pip3 install paho-mqtt python-etcd opencv-python matplotlib pyyaml scipy tqdm`
+`pip3 install -r requirements.txt`
+
+## Instructions
+1. Run `capture_client.py` on NUC.
+2. Run `detection_client.py` on server.
 
 ## References
+- https://github.com/ianlimle/Engineering-Design-Innovation
 - http://www.steves-internet-guide.com/install-mosquitto-linux/
 - https://www.e-consystems.com/blog/camera/how-to-access-cameras-using-opencv-with-python/
 
