@@ -1,0 +1,23 @@
+certifi==2020.6.20
+cycler==0.10.0
+dnspython==1.16.0
+kiwisolver==1.2.0
+matplotlib==3.2.2
+mkl-fft==1.1.0
+mkl-random==1.1.1
+mkl-service==2.3.0
+numpy==1.18.5
+olefile==0.46
+opencv-python==4.3.0.36
+paho-mqtt==1.5.0
+Pillow==7.1.2
+pyparsing==2.4.7
+python-dateutil==2.8.1
+python-etcd==0.4.5
+PyYAML==5.3.1
+scipy @ file:///tmp/build/80754af9/scipy_1592930511789/work
+six==1.15.0
+torch==1.5.1
+torchvision==0.6.0a0+35d732a
+tqdm @ file:///tmp/build/80754af9/tqdm_1593446365756/work
+urllib3==1.25.9
