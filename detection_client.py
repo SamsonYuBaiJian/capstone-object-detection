@@ -8,8 +8,8 @@ import json
 from collections import defaultdict
 import ast
 
-# broker = "10.12.108.241"
 broker = "localhost"
+# broker = "test.mosquitto.org"
 port = 1883
 keepalive = 60
 # keepalive: maximum period in seconds allowed between communications with the broker. 
@@ -58,6 +58,7 @@ def on_message(client, userdata, msg):
     if str(msg.topic) == "capstone/capture":
         data_in_dict = json.loads(msg.payload)
         img_array = np.asarray(data_in_dict['input_img_array_list']).astype(np.uint8)
+        img_array = img_array[:, :, ::-1]
         # img_array = (img_array * 255).round().astype(np.uint8)
         im = Image.fromarray(img_array)
         im.save(settings_dict['input_folder'] + 'image.jpg', 'JPEG')

@@ -5,8 +5,9 @@ YOLOv5 server for SUTD Capstone project
 `pip3 install -r requirements.txt`
 
 ## Instructions
-1. Run `capture_client.py` on NUC.
-2. Run `detection_client.py` on server.
+1. Run `sudo service mosquitto start` on server.
+2. Run `capture_client.py` on NUC.
+3. Run `detection_client.py` on server.
 
 ## References
 - https://github.com/ianlimle/Engineering-Design-Innovation

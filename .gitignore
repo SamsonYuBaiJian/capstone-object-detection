@@ -1,3 +1,4 @@
 dataset/*
 inference/*
 *.png
+*.jpg
