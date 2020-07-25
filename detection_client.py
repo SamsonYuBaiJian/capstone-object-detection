@@ -7,6 +7,7 @@ import numpy as np
 import json
 from collections import defaultdict
 import ast
+import os
 
 broker = "localhost"
 # broker = "test.mosquitto.org"
@@ -27,6 +28,9 @@ with open('settings.txt', 'r') as f:
         settings_dict[key] = value
         line = f.readline()
     f.close()
+
+os.makedirs(settings_dict['output_folder'])
+os.makedirs(settings_dict['input_folder'])
 
 # set map of supermarket
 supermarket_map = ast.literal_eval(settings_dict['map'])
@@ -64,7 +68,7 @@ def on_message(client, userdata, msg):
         im.save(settings_dict['input_folder'] + 'image.jpg', 'JPEG')
 
         # Run YOLOv5 detection
-        bboxes = detect(settings_dict['output_folder'], settings_dict['input_folder'], './weights/yolov5s.pt'
+        bboxes = detect(settings_dict['output_folder'], settings_dict['input_folder'], settings_dict['weights_path']
             , view_img=False, imgsz=640, device='cpu', conf_thres=0.4, iou_thres=0.5, classes=None, agnostic_nms=True, augment=True)
         
         # TODO: return (misplaced: true/false, if true: {misplaced_item1: [xyxy1, xyxy2]})
