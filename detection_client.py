@@ -8,9 +8,9 @@ import json
 from collections import defaultdict
 import ast
 import os
+import torch
 
 broker = "localhost"
-# broker = "test.mosquitto.org"
 port = 1883
 keepalive = 60
 # keepalive: maximum period in seconds allowed between communications with the broker. 
@@ -29,8 +29,8 @@ with open('settings.txt', 'r') as f:
         line = f.readline()
     f.close()
 
-os.makedirs(settings_dict['output_folder'])
-os.makedirs(settings_dict['input_folder'])
+os.makedirs(settings_dict['output_folder'], exist_ok=True)
+os.makedirs(settings_dict['input_folder'], exist_ok=True)
 
 # set map of supermarket
 supermarket_map = ast.literal_eval(settings_dict['map'])
@@ -62,26 +62,26 @@ def on_message(client, userdata, msg):
     if str(msg.topic) == "capstone/capture":
         data_in_dict = json.loads(msg.payload)
         img_array = np.asarray(data_in_dict['input_img_array_list']).astype(np.uint8)
-        img_array = img_array[:, :, ::-1]
-        # img_array = (img_array * 255).round().astype(np.uint8)
+        # img_array = img_array[:, :, ::-1]
         im = Image.fromarray(img_array)
         im.save(settings_dict['input_folder'] + 'image.jpg', 'JPEG')
 
-        # Run YOLOv5 detection
-        bboxes = detect(settings_dict['output_folder'], settings_dict['input_folder'], settings_dict['weights_path']
-            , view_img=False, imgsz=640, device='cpu', conf_thres=0.4, iou_thres=0.5, classes=None, agnostic_nms=True, augment=True)
+        location = data_in_dict['location']
+        right_item_name = supermarket_map[location]
+
+        print(supermarket_map)
+
+        # Run YOLOv5 detections
+        with torch.no_grad():
+            bboxes = detect(settings_dict['output_folder'], settings_dict['input_folder'], pretrained_weights=settings_dict['pretrained_weights_path'], custom_weights=settings_dict['custom_weights_path']
+                , view_img=False, imgsz=640, device='cpu', conf_thres=0.4, iou_thres=0.5, classes=None, agnostic_nms=True, augment=True, supermarket_map=supermarket_map, correct_class_name=right_item_name, save_img=True)
         
         location = data_in_dict['location']
-        misplaced_xyxy = {}
         misplaced = False
         for key in bboxes.keys():
             if key != supermarket_map[location]:
                 misplaced = True
-                misplaced_xyxy[key] = bboxes[key]
-        if misplaced:
-            data_out_json = json.dumps(("Actual: " + supermarket_map[location], True, misplaced_xyxy))
-        else:
-            data_out_json = json.dumps(("Actual: " + supermarket_map[location], False))
+        data_out_json = json.dumps(("Actual: " + supermarket_map[location], misplaced, bboxes))
         client.publish('capstone/detection', data_out_json)
 
 #instantiate an object of the mqtt client
@@ -102,8 +102,8 @@ client.reconnect_delay_set(min_delay=1, max_delay=180)
 client.connect(broker, port, keepalive)
 
 # testing
-# pred_img_array = detect('./inference/outputs', './inference/inputs', './weights/last_yolov5s_results.pt'
-#             , view_img=False, imgsz=640, device='cpu', conf_thres=0.4, iou_thres=0.5, classes=2, agnostic_nms=True, augment=True)
-# print(pred_img_array)
+right_item_name = 'banana'
+bboxes = detect(settings_dict['output_folder'], settings_dict['input_folder'], pretrained_weights=settings_dict['pretrained_weights_path'], custom_weights=settings_dict['custom_weights_path']
+            , view_img=False, imgsz=640, device='cpu', conf_thres=0.4, iou_thres=0.5, classes=None, agnostic_nms=True, augment=True, supermarket_map=supermarket_map, correct_class_name=right_item_name, save_img=True)
 
 client.loop_forever()

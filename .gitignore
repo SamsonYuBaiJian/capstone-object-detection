@@ -1,4 +1,5 @@
 dataset/*
 inference/*
+weights/*
 *.png
 *.jpg

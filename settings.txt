@@ -1,5 +1,6 @@
 yolov5_dir=/mnt/c/Users/samso/Documents/github/SamsonYuBaiJian/yolov5
-map={0: 'banana', 1: 'apple', 2: 'eclipse', 3: 'other'}
+map={0: 'banana', 1: 'apple', 2: 'tictac'}
 input_folder=./inference/inputs/
 output_folder=./inference/outputs/
-weights_path=./weights/yolov5s.pt
+pretrained_weights_path=./weights/yolov5s.pt
+custom_weights_path=./weights/last.pt

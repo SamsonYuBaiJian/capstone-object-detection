@@ -6,11 +6,11 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import numpy as np
 import json
-sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+# sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2
 
-broker = "10.12.43.47"
-# broker = "localhost"
+# broker = "10.12.43.47"
+broker = "localhost"
 port = 1883
 keepalive = 60
 # keepalive: maximum period in seconds allowed between communications with the broker. 
@@ -37,7 +37,6 @@ def on_message(client, userdata, msg):
     + " " + "with QoS " + str(msg.qos))
     
     if str(msg.topic) == "capstone/detection":
-        # TODO: Do robot stuff
         data_in_dict = json.loads(msg.payload)
         print("Received", data_in_dict)
 
@@ -62,9 +61,9 @@ client.connect(broker, port, keepalive)
 
 
 def capture(location):
-    _, frame = cap.read()
-    cv2.imwrite('./test.jpg', frame)
-    # frame = plt.imread('/mnt/c/Users/samso/Desktop/geo640_p.jpg', format='jpeg')
+    # _, frame = cap.read()
+    # cv2.imwrite('./test.jpg', frame)
+    frame = plt.imread('/mnt/c/Users/samso/Desktop/test.jpg', format='jpeg')
     data_out_dict = {'input_img_array_list': frame.tolist(), 'input_img_dim': str(frame.shape), 'location': location}
     data_out_json = json.dumps(data_out_dict)
     client.publish('capstone/capture', data_out_json)
@@ -75,14 +74,14 @@ while True:
     # get prompt and location from ROS
     try:
         # set up the camera
-        cap = cv2.VideoCapture(0)
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH,640)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT,480)
+        # cap = cv2.VideoCapture(0)
+        # cap.set(cv2.CAP_PROP_FRAME_WIDTH,640)
+        # cap.set(cv2.CAP_PROP_FRAME_HEIGHT,480)
         i = input('location')
         capture(int(i))
         # release camera to refresh feed
-        cap.release()
+        # cap.release()
     except KeyboardInterrupt:
         print("Stopped video streaming.")
-        cap.release()
+        # cap.release()
         exit()
