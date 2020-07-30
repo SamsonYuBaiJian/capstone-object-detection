@@ -69,13 +69,11 @@ def on_message(client, userdata, msg):
         location = data_in_dict['location']
         right_item_name = supermarket_map[location]
 
-        print(supermarket_map)
-
         # Run YOLOv5 detections
         with torch.no_grad():
             bboxes = detect(settings_dict['output_folder'], settings_dict['input_folder'], pretrained_weights=settings_dict['pretrained_weights_path'], custom_weights=settings_dict['custom_weights_path']
                 , view_img=False, imgsz=640, device='cpu', conf_thres=0.4, iou_thres=0.5, classes=None, agnostic_nms=True, augment=True, supermarket_map=supermarket_map, correct_class_name=right_item_name, save_img=True)
-        
+
         location = data_in_dict['location']
         misplaced = False
         for key in bboxes.keys():
@@ -83,6 +81,8 @@ def on_message(client, userdata, msg):
                 misplaced = True
         data_out_json = json.dumps(("Actual: " + supermarket_map[location], misplaced, bboxes))
         client.publish('capstone/detection', data_out_json)
+        client.publish('capstone/gui', data_out_json)
+
 
 #instantiate an object of the mqtt client
 client = paho.Client("detection", clean_session= False, userdata=None) 
@@ -104,5 +104,6 @@ client.connect(broker, port, keepalive)
 # right_item_name = 'banana'
 # bboxes = detect(settings_dict['output_folder'], settings_dict['input_folder'], pretrained_weights=settings_dict['pretrained_weights_path'], custom_weights=settings_dict['custom_weights_path']
 #             , view_img=False, imgsz=640, device='cpu', conf_thres=0.4, iou_thres=0.5, classes=None, agnostic_nms=True, augment=True, supermarket_map=supermarket_map, correct_class_name=right_item_name, save_img=True)
+# plt.imread('./inference/outputs/image.jpg', format='jpeg')
 
 client.loop_forever()

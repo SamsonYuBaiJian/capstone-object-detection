@@ -63,7 +63,7 @@ client.connect(broker, port, keepalive)
 def capture(location):
     # _, frame = cap.read()
     # cv2.imwrite('./test.jpg', frame)
-    frame = plt.imread('/mnt/c/Users/samso/Desktop/test.jpg', format='jpeg')
+    frame = plt.imread('/mnt/c/Users/samso/Desktop/image.jpg', format='jpeg')
     data_out_dict = {'input_img_array_list': frame.tolist(), 'input_img_dim': str(frame.shape), 'location': location}
     data_out_json = json.dumps(data_out_dict)
     client.publish('capstone/capture', data_out_json)

@@ -6,8 +6,8 @@ YOLOv5 server for SUTD Capstone project
 
 ## Instructions
 1. Run `sudo service mosquitto start` on server.
-2. Run `capture_client.py` on NUC.
-3. Run `detection_client.py` on server.
+2. Run `python3 capture_client.py` on NUC.
+3. Run `python3 detection_client.py` and `python3 gui_client.py` (make sure this is not on Anaconda as its Python does not work well with tkinter) on server.
 
 ## References
 - https://github.com/ianlimle/Engineering-Design-Innovation
