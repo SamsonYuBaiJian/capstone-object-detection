@@ -40,10 +40,6 @@ def on_message(client, userdata, msg):
         # TODO: Do robot stuff
         data_in_dict = json.loads(msg.payload)
         print("Received", data_in_dict)
-        # img_array = np.asarray(data_in_dict['pred_img_array_list']).astype(np.uint8)
-        # im = Image.fromarray(img_array)
-        # im.save('./inference/output/test.jpg', 'JPEG')
-        pass
 
 #instantiate an object of the mqtt client
 client = paho.Client("capture", clean_session= False, userdata=None) 

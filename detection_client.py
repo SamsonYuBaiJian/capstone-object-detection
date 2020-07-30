@@ -71,7 +71,6 @@ def on_message(client, userdata, msg):
         bboxes = detect(settings_dict['output_folder'], settings_dict['input_folder'], settings_dict['weights_path']
             , view_img=False, imgsz=640, device='cpu', conf_thres=0.4, iou_thres=0.5, classes=None, agnostic_nms=True, augment=True)
         
-        # TODO: return (misplaced: true/false, if true: {misplaced_item1: [xyxy1, xyxy2]})
         location = data_in_dict['location']
         misplaced_xyxy = {}
         misplaced = False
