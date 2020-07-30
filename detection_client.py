@@ -101,9 +101,8 @@ client.reconnect_delay_set(min_delay=1, max_delay=180)
 #establish connection to the broker
 client.connect(broker, port, keepalive)
 
-# testing
-right_item_name = 'banana'
-bboxes = detect(settings_dict['output_folder'], settings_dict['input_folder'], pretrained_weights=settings_dict['pretrained_weights_path'], custom_weights=settings_dict['custom_weights_path']
-            , view_img=False, imgsz=640, device='cpu', conf_thres=0.4, iou_thres=0.5, classes=None, agnostic_nms=True, augment=True, supermarket_map=supermarket_map, correct_class_name=right_item_name, save_img=True)
+# right_item_name = 'banana'
+# bboxes = detect(settings_dict['output_folder'], settings_dict['input_folder'], pretrained_weights=settings_dict['pretrained_weights_path'], custom_weights=settings_dict['custom_weights_path']
+#             , view_img=False, imgsz=640, device='cpu', conf_thres=0.4, iou_thres=0.5, classes=None, agnostic_nms=True, augment=True, supermarket_map=supermarket_map, correct_class_name=right_item_name, save_img=True)
 
 client.loop_forever()
