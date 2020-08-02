@@ -22,7 +22,7 @@ def gui(q):
             img_label.image = img
             misplaced = data[1]
             if misplaced:
-                text = '✖ Misplaced item(s):'
+                text = 'Misplaced item(s):'
                 actual_item = data[0].split()[1]
                 for item in data[2].keys():
                     if item != actual_item:
@@ -30,7 +30,7 @@ def gui(q):
                 text_label['text'] = text
                 print(text)
             else:
-                text_label['text'] = '✔ No misplaced items!'
+                text_label['text'] = 'No misplaced items!'
             root.after(5, test, root, q, img_label, text_label)
         except queue.Empty:
             root.after(5, test, root, q, img_label, text_label)
