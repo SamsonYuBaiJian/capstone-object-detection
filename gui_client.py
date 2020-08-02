@@ -12,14 +12,17 @@ import tkinter.font as tkFont
 
 
 def gui(q):
-    def test(root, q, img_label, text_label):
+    def test(root, q, input_img_label, pred_img_label, text_label):
         try:
             data = q.get(0)
-            img = ImageTk.PhotoImage(Image.open('./inference/outputs/image.jpg'))
             h, w, _ = np.asarray(Image.open('./inference/outputs/image.jpg')).shape
-            root.geometry('{}x{}'.format(w, h + 50))
-            img_label.configure(image=img)
-            img_label.image = img
+            root.geometry('{}x{}'.format(w * 2 + 30, h + 50))
+            input_img = ImageTk.PhotoImage(Image.open('./inference/inputs/image.jpg'))
+            input_img_label.configure(image=input_img)
+            input_img_label.image = input_img
+            pred_img = ImageTk.PhotoImage(Image.open('./inference/outputs/image.jpg'))
+            pred_img_label.configure(image=pred_img)
+            pred_img_label.image = pred_img
             misplaced = data[1]
             if misplaced:
                 text = 'Misplaced item(s):'
@@ -31,9 +34,9 @@ def gui(q):
                 print(text)
             else:
                 text_label['text'] = 'No misplaced items!'
-            root.after(5, test, root, q, img_label, text_label)
+            root.after(5, test, root, q, input_img_label, pred_img_label, text_label)
         except queue.Empty:
-            root.after(5, test, root, q, img_label, text_label)
+            root.after(5, test, root, q, input_img_label, pred_img_label, text_label)
 
     root = Tk()
 
@@ -41,10 +44,12 @@ def gui(q):
 
     text_label = Label(root, text='Starting check for misplaced items...', font=(None, 20))
     text_label.pack(fill='x')
-    img_label = Label(root)
-    img_label.pack()
+    input_img_label = Label(root)
+    input_img_label.pack(side='left')
+    pred_img_label = Label(root)
+    pred_img_label.pack(side='right')
 
-    root.after(5, test, root, q, img_label, text_label)
+    root.after(5, test, root, q, input_img_label, pred_img_label, text_label)
     root.mainloop()
 
 
