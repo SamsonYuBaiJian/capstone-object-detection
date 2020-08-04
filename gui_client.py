@@ -9,15 +9,75 @@ import os
 import threading
 import queue
 import tkinter.font as tkFont
+import imutils
+import pyzbar.pyzbar as pyzbar
+import cv2
+import sys
+
+
+def barcode_scanner(img_path, label):
+    label_to_idx = {'banana':11, 'apple':12, 'tictac':21, 'doritos':22}
+    idx_to_label = {v: k for k, v in label_to_idx.items()}    
+    
+    # load the input image
+    inputImage = cv2.imread(img_path)
+    inputImage = cv2.cvtColor(inputImage, cv2.COLOR_BGR2RGB)
+    
+    barcodeDetected = []
+
+    for i in range(0, 10, 10):
+        # Rotate image to find barcodes
+        image = imutils.rotate_bound(inputImage, i) 
+
+        # find the barcodes in the image and decode each of the barcodes
+        barcodes = pyzbar.decode(image)
+
+        # loop over the detected barcodes
+        for barcode in barcodes:        
+            barcodeType = barcode.type
+
+            # Comment out to detect QR codes
+            if barcodeType == "QRCODE":            
+                continue    
+
+            # the barcode data is a bytes object so if we want to draw it on
+            # our output image we need to convert it to a string first
+            barcodeData = barcode.data.decode("utf-8")            
+            barcodeLabel = idx_to_label[int(barcodeData)]   
+            
+            barcodeDetected.append(barcodeLabel)
+            
+            # extract the bounding box location of the barcode and draw the
+            # bounding box surrounding the barcode on the image
+            (x, y, w, h) = barcode.rect
+            cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
+
+            # draw the barcode data and barcode type on the image
+#             text = "{} ({})".format(barcodeData, barcodeType)
+            text = barcodeLabel
+            cv2.putText(image, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+
+            # print the barcode type and data to the terminal
+            # print("[INFO] Found {} barcode: {}".format(barcodeType, barcodeData))       
+        else:
+            continue    
+        break    
+    
+    if len(barcodeDetected) == 0:
+        cv2.putText(image, label, (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+
+    return image
 
 
 def gui(q):
     def test(root, q, input_img_label, pred_img_label, text_label):
         try:
             data = q.get(0)
+            actual_item = data[0].split()[1]
             h, w, _ = np.asarray(Image.open('./inference/outputs/image.jpg')).shape
             root.geometry('{}x{}'.format(w * 2 + 30, h + 50))
-            input_img = ImageTk.PhotoImage(Image.open('./inference/inputs/image.jpg'))
+            # input_img = ImageTk.PhotoImage(Image.open('./inference/inputs/image.jpg'))
+            input_img = ImageTk.PhotoImage(Image.fromarray(barcode_scanner(img_path = './inference/inputs/image.jpg', label=actual_item), 'RGB'))
             input_img_label.configure(image=input_img)
             input_img_label.image = input_img
             pred_img = ImageTk.PhotoImage(Image.open('./inference/outputs/image.jpg'))
@@ -27,7 +87,6 @@ def gui(q):
             if misplaced:
                 text = 'misplaced item(s):'
                 total_count = 0
-                actual_item = data[0].split()[1]
                 for item in data[2].keys():
                     if item != actual_item:
                         number_of_item = len(data[2][item])
