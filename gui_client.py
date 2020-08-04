@@ -34,38 +34,33 @@ def barcode_scanner(img_path, label):
 
         # loop over the detected barcodes
         for barcode in barcodes:        
-            barcodeType = barcode.type
+            barcode_type = barcode.type
 
             # Comment out to detect QR codes
-            if barcodeType == "QRCODE":            
+            if barcode_type == "QRCODE":            
                 continue    
 
             # the barcode data is a bytes object so if we want to draw it on
             # our output image we need to convert it to a string first
-            barcodeData = barcode.data.decode("utf-8")            
-            barcodeLabel = idx_to_label[int(barcodeData)]   
+            barcode_data = barcode.data.decode("utf-8")            
+            barcode_label = idx_to_label[int(barcode_data)]   
             
-            barcodeDetected.append(barcodeLabel)
+            barcodeDetected.append(barcode_label)
             
             # extract the bounding box location of the barcode and draw the
             # bounding box surrounding the barcode on the image
             (x, y, w, h) = barcode.rect
-            cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
+            cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 0), 2)
 
-            # draw the barcode data and barcode type on the image
-#             text = "{} ({})".format(barcodeData, barcodeType)
-            text = barcodeLabel
-            cv2.putText(image, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-
-            # print the barcode type and data to the terminal
-            # print("[INFO] Found {} barcode: {}".format(barcodeType, barcodeData))       
+            text = barcode_label
+            cv2.putText(image, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
         else:
             continue    
         break    
     
     if len(barcodeDetected) == 0:
         label = "Barcode detected: " + label
-        cv2.putText(image, label, (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+        cv2.putText(image, label, (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
 
     return image
 
@@ -82,12 +77,13 @@ def gui(q):
             # input_img = ImageTk.PhotoImage(Image.open('./inference/inputs/image.jpg'))
             input_img = Image.fromarray(barcode_scanner(img_path = './inference/inputs/image.jpg', label=actual_item), 'RGB')
             pred_img = Image.open('./inference/outputs/image.jpg')
-            # print(input_img.shape, pred_img.shape)
-            print(w)
             if w * 2 + pad_width > screen_width:
+                # make sure image does not go out of screen
+                root.geometry('{}x{}'.format(screen_width, h))
                 max_width = int(np.floor((screen_width - pad_width) / 2))
                 input_img = input_img.resize((max_width, int(h * max_width / w)))
                 pred_img = pred_img.resize((max_width, int(h * max_width / w)))
+                root.geometry('{}x{}'.format(screen_width, int(h * max_width / w) + 50))
             input_img = ImageTk.PhotoImage(input_img)
             pred_img = ImageTk.PhotoImage(pred_img)
             input_img_label.configure(image=input_img)
