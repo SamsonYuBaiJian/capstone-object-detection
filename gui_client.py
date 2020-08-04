@@ -64,6 +64,7 @@ def barcode_scanner(img_path, label):
         break    
     
     if len(barcodeDetected) == 0:
+        label = "Barcode detected: " + label
         cv2.putText(image, label, (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
 
     return image
@@ -74,13 +75,23 @@ def gui(q):
         try:
             data = q.get(0)
             actual_item = data[0].split()[1]
-            h, w, _ = np.asarray(Image.open('./inference/outputs/image.jpg')).shape
-            root.geometry('{}x{}'.format(w * 2 + 30, h + 50))
+            h, w, _ = np.asarray(Image.open('./inference/inputs/image.jpg')).shape
+            screen_width = 1536
+            pad_width = 30
+            root.geometry('{}x{}'.format(w * 2 + pad_width, h + 50))
             # input_img = ImageTk.PhotoImage(Image.open('./inference/inputs/image.jpg'))
-            input_img = ImageTk.PhotoImage(Image.fromarray(barcode_scanner(img_path = './inference/inputs/image.jpg', label=actual_item), 'RGB'))
+            input_img = Image.fromarray(barcode_scanner(img_path = './inference/inputs/image.jpg', label=actual_item), 'RGB')
+            pred_img = Image.open('./inference/outputs/image.jpg')
+            # print(input_img.shape, pred_img.shape)
+            print(w)
+            if w * 2 + pad_width > screen_width:
+                max_width = int(np.floor((screen_width - pad_width) / 2))
+                input_img = input_img.resize((max_width, int(h * max_width / w)))
+                pred_img = pred_img.resize((max_width, int(h * max_width / w)))
+            input_img = ImageTk.PhotoImage(input_img)
+            pred_img = ImageTk.PhotoImage(pred_img)
             input_img_label.configure(image=input_img)
             input_img_label.image = input_img
-            pred_img = ImageTk.PhotoImage(Image.open('./inference/outputs/image.jpg'))
             pred_img_label.configure(image=pred_img)
             pred_img_label.image = pred_img
             misplaced = data[1]
