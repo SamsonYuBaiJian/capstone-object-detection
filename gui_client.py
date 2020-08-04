@@ -25,13 +25,18 @@ def gui(q):
             pred_img_label.image = pred_img
             misplaced = data[1]
             if misplaced:
-                text = 'Misplaced item(s):'
+                text = 'misplaced item(s):'
+                total_count = 0
                 actual_item = data[0].split()[1]
                 for item in data[2].keys():
                     if item != actual_item:
-                        text += ' ' + item
-                text_label['text'] = text
-                print(text)
+                        number_of_item = len(data[2][item])
+                        if total_count == 0:
+                            text += " {} {}".format(number_of_item, item)
+                        else:
+                            text += ", {} {}".format(number_of_item, item)
+                        total_count += number_of_item
+                text_label['text'] = "{} {}".format(total_count, text)
             else:
                 text_label['text'] = 'No misplaced items!'
             root.after(5, test, root, q, input_img_label, pred_img_label, text_label)
@@ -39,7 +44,6 @@ def gui(q):
             root.after(5, test, root, q, input_img_label, pred_img_label, text_label)
 
     root = Tk()
-
     root.geometry('700x500')
 
     text_label = Label(root, text='Starting check for misplaced items...', font=(None, 20))
