@@ -20,14 +20,14 @@ def barcode_scanner(img_path, label):
     idx_to_label = {v: k for k, v in label_to_idx.items()}    
     
     # load the input image
-    inputImage = cv2.imread(img_path)
-    inputImage = cv2.cvtColor(inputImage, cv2.COLOR_BGR2RGB)
+    image = cv2.imread(img_path)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     
     barcodeDetected = []
 
     for i in range(0, 10, 10):
         # Rotate image to find barcodes
-        image = imutils.rotate_bound(inputImage, i) 
+        image = imutils.rotate_bound(image, i) 
 
         # find the barcodes in the image and decode each of the barcodes
         barcodes = pyzbar.decode(image)
@@ -50,17 +50,17 @@ def barcode_scanner(img_path, label):
             # extract the bounding box location of the barcode and draw the
             # bounding box surrounding the barcode on the image
             (x, y, w, h) = barcode.rect
-            cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 0), 2)
+            cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
 
             text = barcode_label
-            cv2.putText(image, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
+            cv2.putText(image, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
         else:
             continue    
         break    
     
     if len(barcodeDetected) == 0:
         label = "Barcode detected: " + label
-        cv2.putText(image, label, (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
+        cv2.putText(image, label, (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
 
     return image
 
