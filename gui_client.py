@@ -97,7 +97,7 @@ def gui(notification_q, info_q):
 
             misplaced = data[1]
             if misplaced:
-                status += "Misplaced"
+                status += "Misplaced!"
                 # text = 'misplaced\n item(s):'
                 # total_count = 0
                 start = True
@@ -119,7 +119,7 @@ def gui(notification_q, info_q):
                         identified += "{} {}".format(number_of_item, item)
                 else:
                     # for OOS items
-                    status += "Out of stock"
+                    status += "Out of stock!"
                     identified += "-"
             text_label['text'] = location + "\n" + status + "\n" + identified
             root.after(5, test, root, max_size, info_q, input_img_label, pred_img_label, descrip_frame, text_label, barcode_map)
