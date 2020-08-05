@@ -106,7 +106,10 @@ def gui(q):
                         total_count += number_of_item
                 text_label['text'] = "{} {}".format(total_count, text)
             else:
-                text_label['text'] = 'No misplaced items!'
+                if len(data[2].keys()) > 0:
+                    text_label['text'] = 'No misplaced items!'
+                else:
+                    text_label['text'] =  '{} is out of stock!'.format(actual_item)
             root.after(5, test, root, q, input_img_label, pred_img_label, text_label, barcode_map)
         except queue.Empty:
             root.after(5, test, root, q, input_img_label, pred_img_label, text_label, barcode_map)
