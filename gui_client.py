@@ -67,10 +67,11 @@ def barcode_scanner(img_path, label, barcode_map):
     return image
 
 
-def gui(q):
-    def test(root, q, input_img_label, pred_img_label, text_label, barcode_map):
+def gui(notification_q, info_q):
+    def test(root, info_q, input_img_label, pred_img_label, descrip_frame, status_label, barcode_map):
         try:
-            data = q.get(0)
+            data = info_q.get(0)
+            descrip_frame.pack(side='bottom')
             actual_item = data[0]
             h, w, _ = np.asarray(Image.open('./inference/inputs/image.jpg')).shape
             screen_width = 1536
@@ -104,25 +105,42 @@ def gui(q):
                         else:
                             text += ", {} {}".format(number_of_item, item)
                         total_count += number_of_item
-                text_label['text'] = "{} {}".format(total_count, text)
+                status_label['text'] = "{} {}".format(total_count, text)
             else:
                 if len(data[2].keys()) > 0:
-                    text_label['text'] = 'No misplaced items!'
+                    status_label['text'] = 'No misplaced items!'
                 else:
-                    text_label['text'] =  '{} is out of stock!'.format(actual_item)
-            root.after(5, test, root, q, input_img_label, pred_img_label, text_label, barcode_map)
+                    status_label['text'] =  '{} is out of stock!'.format(actual_item)
+            root.after(5, test, root, info_q, input_img_label, pred_img_label, descrip_frame, status_label, barcode_map)
         except queue.Empty:
-            root.after(5, test, root, q, input_img_label, pred_img_label, text_label, barcode_map)
+            root.after(5, test, root, info_q, input_img_label, pred_img_label, descrip_frame, status_label, barcode_map)
+
+    def start_robot(root, start_button, notification_q, info_q, input_img_label, pred_img_label, descrip_frame, barcode_map):
+        start_button.destroy()
+        descrip_frame['highlightbackground'] = "black"
+        descrip_frame['highlightthickness'] = 4
+        notification_q.put('START')
+        root.attributes('-zoomed', True)
+        text_label = Label(descrip_frame, text='Starting check for misplaced items...', height=5, font=(None, 20), bg='white')
+        text_label.pack()
+        root.after(5, test, root, info_q, input_img_label, pred_img_label, descrip_frame, text_label, barcode_map)
 
     root = Tk()
-    root.geometry('700x500')
+    root.geometry('600x250')
+    root['bg']= "white"
 
-    text_label = Label(root, text='Starting check for misplaced items...', font=(None, 20))
-    text_label.pack(fill='x')
+    title_label = Label(root, text='R E D R O', pady=20, font=(None, 25), bg='white')
+    title_label.pack(fill='x')
     input_img_label = Label(root)
     input_img_label.pack(side='left')
     pred_img_label = Label(root)
     pred_img_label.pack(side='right')
+    descrip_frame = Frame(root, bg="white")
+    descrip_frame.pack(fill='x')
+    start_button = Button(root, text='START', bg="gray24", fg="white", activebackground='black', 
+        activeforeground='white', height=3, font=(None, 30), command = lambda: start_robot(root, start_button, notification_q, info_q, input_img_label, 
+        pred_img_label, descrip_frame, barcode_map))
+    start_button.pack(fill='x')
 
     with open('settings.txt', 'r') as f:
         settings_dict = {}
@@ -137,11 +155,10 @@ def gui(q):
         f.close()
 
     barcode_map = ast.literal_eval(settings_dict['barcode_map'])
-    root.after(5, test, root, q, input_img_label, pred_img_label, text_label, barcode_map)
     root.mainloop()
 
 
-def main(q):
+def main(notification_q, info_q):
     broker = "localhost"
     port = 1883
     keepalive = 60
@@ -170,7 +187,7 @@ def main(q):
         
         if str(msg.topic) == "capstone/gui":
             data_in_dict = json.loads(msg.payload)
-            q.put(data_in_dict)
+            info_q.put(data_in_dict)
 
 
     #instantiate an object of the mqtt client
@@ -189,11 +206,19 @@ def main(q):
     #establish connection to the broker
     client.connect(broker, port, keepalive)
 
-    client.loop_forever()
+    client.loop_start()
 
-q = queue.Queue()
-gui = threading.Thread(target=gui, args =(q, ))
-main = threading.Thread(target=main, args =(q, ))
+    while True:
+        try:
+            notify = notification_q.get(0)
+            print(notify)
+        except queue.Empty:
+            pass
+
+notification_q = queue.Queue()
+info_q = queue.Queue()
+gui = threading.Thread(target=gui, args =(notification_q, info_q))
+main = threading.Thread(target=main, args =(notification_q, info_q))
 
 gui.start()
 main.start()
