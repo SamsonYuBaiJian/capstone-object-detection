@@ -65,7 +65,7 @@ def capture(location):
     # cv2.imwrite('./test.jpg', frame)
     frame = plt.imread('/mnt/c/Users/samso/Desktop/image.jpg', format='jpeg')
     # frame = plt.imread('/mnt/c/Users/samso/Desktop/image.png', format='png')
-    data_out_dict = {'input_img_array_list': frame.tolist(), 'input_img_dim': str(frame.shape), 'location': location}
+    data_out_dict = {'row1_array_list': frame.tolist(), 'input_img_dim': str(frame.shape), 'location': location}
     data_out_json = json.dumps(data_out_dict)
     client.publish('capstone/capture', data_out_json)
 

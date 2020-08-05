@@ -61,7 +61,7 @@ def on_message(client, userdata, msg):
     
     if str(msg.topic) == "capstone/capture":
         data_in_dict = json.loads(msg.payload)
-        img_array = np.asarray(data_in_dict['input_img_array_list']).astype(np.uint8)
+        img_array = np.asarray(data_in_dict['row1_array_list']).astype(np.uint8)
         # img_array = img_array[:, :, ::-1]
         im = Image.fromarray(img_array)
         im.save(settings_dict['input_folder'] + 'image.jpg', 'JPEG')
@@ -78,18 +78,26 @@ def on_message(client, userdata, msg):
 
         location = data_in_dict['location']
         misplaced = False
-        deviations = defaultdict(lambda: [])
+        # deviations = defaultdict(lambda: [])
+        one_deviation = {}
         for key in bboxes.keys():
             if key != supermarket_map[location]:
                 misplaced = True
-            for xyxy in bboxes[key]:
-                x1, y1, x2, y2 = xyxy
+                # if not deviation_done:
+                # for xyxy in bboxes[key]:
+                x1, y1, x2, y2 = bboxes[key][0]
                 obj_center = ((x2 + x1)/2, (y2 + y1)/2) # (x, y)
                 deviation = (obj_center[0] - img_center[0], obj_center[1] - img_center[1]) # (x, y)
-                deviations[key].append(deviation)
-        data_out_json = json.dumps(("Actual: " + supermarket_map[location], misplaced, bboxes, deviations))
-        client.publish('capstone/detection', data_out_json)
-        client.publish('capstone/gui', data_out_json)
+                # deviations[key].append(deviation)
+                one_deviation[key] = deviation
+                break
+        
+        # TODO: misplaced vs OOS
+        # detection_data_json = json.dumps((supermarket_map[location], misplaced, deviations))
+        detection_data_json = json.dumps((supermarket_map[location], misplaced, one_deviation))
+        client.publish('capstone/detection', detection_data_json)
+        gui_data_json = json.dumps((supermarket_map[location], misplaced, bboxes))
+        client.publish('capstone/gui', gui_data_json)
 
 
 #instantiate an object of the mqtt client

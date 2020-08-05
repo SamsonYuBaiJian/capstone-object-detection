@@ -1,5 +1,6 @@
 yolov5_dir=/mnt/c/Users/samso/Documents/github/SamsonYuBaiJian/yolov5
-map={0: 'banana', 1: 'apple', 2: 'tictac'}
+map={1: 'banana', 2: 'apple', 3: 'tictac', 4: 'mnm', 5: 'polo'}
+barcode_map={'banana': 11, 'apple': 12, 'tictac': 21, 'mnm': 22}
 input_folder=./inference/inputs/
 output_folder=./inference/outputs/
 pretrained_weights_path=./weights/yolov5s.pt

@@ -11,12 +11,13 @@ import queue
 import tkinter.font as tkFont
 import imutils
 import pyzbar.pyzbar as pyzbar
+import ast
 import cv2
 import sys
 
 
-def barcode_scanner(img_path, label):
-    label_to_idx = {'banana':11, 'apple':12, 'tictac':21, 'doritos':22}
+def barcode_scanner(img_path, label, barcode_map):
+    label_to_idx = barcode_map
     idx_to_label = {v: k for k, v in label_to_idx.items()}    
     
     # load the input image
@@ -42,18 +43,19 @@ def barcode_scanner(img_path, label):
 
             # the barcode data is a bytes object so if we want to draw it on
             # our output image we need to convert it to a string first
-            barcode_data = barcode.data.decode("utf-8")            
-            barcode_label = idx_to_label[int(barcode_data)]   
-            
-            barcodeDetected.append(barcode_label)
-            
-            # extract the bounding box location of the barcode and draw the
-            # bounding box surrounding the barcode on the image
-            (x, y, w, h) = barcode.rect
-            cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
+            barcode_data = barcode.data.decode("utf-8")
+            try:
+                barcode_label = idx_to_label[int(barcode_data)]
+                barcodeDetected.append(barcode_label)
+                # extract the bounding box location of the barcode and draw the
+                # bounding box surrounding the barcode on the image
+                (x, y, w, h) = barcode.rect
+                cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
 
-            text = barcode_label
-            cv2.putText(image, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
+                text = barcode_label
+                cv2.putText(image, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
+            except KeyError:
+                continue
         else:
             continue    
         break    
@@ -66,16 +68,16 @@ def barcode_scanner(img_path, label):
 
 
 def gui(q):
-    def test(root, q, input_img_label, pred_img_label, text_label):
+    def test(root, q, input_img_label, pred_img_label, text_label, barcode_map):
         try:
             data = q.get(0)
-            actual_item = data[0].split()[1]
+            actual_item = data[0]
             h, w, _ = np.asarray(Image.open('./inference/inputs/image.jpg')).shape
             screen_width = 1536
             pad_width = 30
             root.geometry('{}x{}'.format(w * 2 + pad_width, h + 50))
             # input_img = ImageTk.PhotoImage(Image.open('./inference/inputs/image.jpg'))
-            input_img = Image.fromarray(barcode_scanner(img_path = './inference/inputs/image.jpg', label=actual_item), 'RGB')
+            input_img = Image.fromarray(barcode_scanner(img_path = './inference/inputs/image.jpg', label=actual_item, barcode_map=barcode_map), 'RGB')
             pred_img = Image.open('./inference/outputs/image.jpg')
             if w * 2 + pad_width > screen_width:
                 # make sure image does not go out of screen
@@ -105,9 +107,9 @@ def gui(q):
                 text_label['text'] = "{} {}".format(total_count, text)
             else:
                 text_label['text'] = 'No misplaced items!'
-            root.after(5, test, root, q, input_img_label, pred_img_label, text_label)
+            root.after(5, test, root, q, input_img_label, pred_img_label, text_label, barcode_map)
         except queue.Empty:
-            root.after(5, test, root, q, input_img_label, pred_img_label, text_label)
+            root.after(5, test, root, q, input_img_label, pred_img_label, text_label, barcode_map)
 
     root = Tk()
     root.geometry('700x500')
@@ -119,7 +121,20 @@ def gui(q):
     pred_img_label = Label(root)
     pred_img_label.pack(side='right')
 
-    root.after(5, test, root, q, input_img_label, pred_img_label, text_label)
+    with open('settings.txt', 'r') as f:
+        settings_dict = {}
+        line = f.readline()
+        while line:
+            line = line.split('=')
+            key = line[0]
+            value = line[1]
+            value = value.split('\n')[0]
+            settings_dict[key] = value
+            line = f.readline()
+        f.close()
+
+    barcode_map = ast.literal_eval(settings_dict['barcode_map'])
+    root.after(5, test, root, q, input_img_label, pred_img_label, text_label, barcode_map)
     root.mainloop()
 
 
