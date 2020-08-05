@@ -68,13 +68,12 @@ def barcode_scanner(img_path, label, barcode_map):
 
 
 def gui(notification_q, info_q):
-    def test(root, max_size, info_q, input_img_label, pred_img_label, descrip_frame, status_label, barcode_map):
+    def test(root, max_size, info_q, input_img_label, pred_img_label, descrip_frame, text_label, barcode_map):
         try:
             data = info_q.get(0)
-            descrip_frame.pack(side='bottom')
+            descrip_frame.pack(side='top')
             actual_item = data[0]
             h, w, _ = np.asarray(Image.open('./inference/inputs/image.jpg')).shape
-            # input_img = ImageTk.PhotoImage(Image.open('./inference/inputs/image.jpg'))
             input_img = Image.fromarray(barcode_scanner(img_path = './inference/inputs/image.jpg', label=actual_item, barcode_map=barcode_map), 'RGB')
             pred_img = Image.open('./inference/outputs/image.jpg')
             max_width = max_size[0]
@@ -91,29 +90,41 @@ def gui(notification_q, info_q):
             pred_img_label.configure(image=pred_img)
             pred_img_label.image = pred_img
 
+            # process text to show user
+            location = "Location:   " + actual_item.capitalize()
+            status = "Status:   "
+            identified = "Identified:   "
+
             misplaced = data[1]
             if misplaced:
-                text = 'misplaced item(s):'
-                total_count = 0
+                status += "Misplaced"
+                # text = 'misplaced\n item(s):'
+                # total_count = 0
+                start = True
                 for item in data[2].keys():
-                    if item != actual_item:
-                        number_of_item = len(data[2][item])
-                        if total_count == 0:
-                            text += " {} {}".format(number_of_item, item)
-                        else:
-                            text += ", {} {}".format(number_of_item, item)
-                        total_count += number_of_item
-                status_label['text'] = "{} {}".format(total_count, text)
+                    # if item != actual_item:
+                    number_of_item = len(data[2][item])
+                    if start:
+                        identified += "{} {}".format(number_of_item, item)
+                        start = False
+                    else:
+                        identified += ", {} {}".format(number_of_item, item)
+                        # total_count += number_of_item
             else:
-                if len(data[2].keys()) > 0:
-                    # for misplaced items
-                    status_label['text'] = 'No misplaced items!'
+                if len(data[2].keys()) == 1:
+                    # for no misplaced items and also not OOS
+                    status += "-"
+                    for item in data[2].keys():
+                        number_of_item = len(data[2][item])
+                        identified += "{} {}".format(number_of_item, item)
                 else:
                     # for OOS items
-                    status_label['text'] =  '{} is out of stock!'.format(actual_item)
-            root.after(5, test, root, max_size, info_q, input_img_label, pred_img_label, descrip_frame, status_label, barcode_map)
+                    status += "Out of stock"
+                    identified += "-"
+            text_label['text'] = location + "\n" + status + "\n" + identified
+            root.after(5, test, root, max_size, info_q, input_img_label, pred_img_label, descrip_frame, text_label, barcode_map)
         except queue.Empty:
-            root.after(5, test, root, max_size, info_q, input_img_label, pred_img_label, descrip_frame, status_label, barcode_map)
+            root.after(5, test, root, max_size, info_q, input_img_label, pred_img_label, descrip_frame, text_label, barcode_map)
 
 
     def start_robot(root, start_button, notification_q, info_q, input_img_label, pred_img_label, descrip_frame, barcode_map):
@@ -123,7 +134,7 @@ def gui(notification_q, info_q):
         notification_q.put('START')
         max_size = root.maxsize()
         root.geometry('{}x{}'.format(max_size[0], max_size[1]))
-        text_label = Label(descrip_frame, text='Starting check for misplaced items...', height=5, font=(None, 20), bg='white')
+        text_label = Label(descrip_frame, text='Starting supermarket check...', height=5, font=(None, 20), bg='white')
         text_label.pack()
         root.after(5, test, root, max_size, info_q, input_img_label, pred_img_label, descrip_frame, text_label, barcode_map)
 
@@ -133,10 +144,12 @@ def gui(notification_q, info_q):
     root['bg']= "white"
 
     title_label = Label(root, text='R E D R O', pady=20, font=(None, 25), bg='white')
-    title_label.pack(fill='x')
-    input_img_label = Label(root)
+    title_label.pack(fill='x', side='top')
+    image_frame = Frame(root, bg="white")
+    image_frame.pack(fill='x', side='top')
+    input_img_label = Label(image_frame)
     input_img_label.pack(side='left')
-    pred_img_label = Label(root)
+    pred_img_label = Label(image_frame)
     pred_img_label.pack(side='right')
     descrip_frame = Frame(root, bg="white")
     descrip_frame.pack(fill='x')

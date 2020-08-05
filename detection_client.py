@@ -79,28 +79,13 @@ def on_message(client, userdata, msg):
 
         if pick_up_item is None:
             misplaced = False
+            deviation = {}
         else:
             misplaced = True
             label, x1, y1, x2, y2 = pick_up_item
             deviation = {}
             obj_center = ((x2 + x1)/2, (y2 + y1)/2) # (x, y)
-            # deviations[key].append(deviation)
             deviation[label] = (obj_center[0] - img_center[0], obj_center[1] - img_center[1]) # (x, y)
-        # for key in bboxes.keys():
-        #     if key != supermarket_map[location]:
-        #         misplaced = True
-        #         # if not deviation_done:
-        #         # for xyxy in bboxes[key]:
-        #         # x1, y1, x2, y2 = bboxes[key][0]
-        #         x1 = pick_up_item[0]
-        #         y1 = pick_up_item[1]
-        #         x2 = pick_up_item[2]
-        #         y2 = pick_up_item[3]
-        #         obj_center = ((x2 + x1)/2, (y2 + y1)/2) # (x, y)
-        #         deviation = (obj_center[0] - img_center[0], obj_center[1] - img_center[1]) # (x, y)
-        #         # deviations[key].append(deviation)
-        #         deviation[key] = deviation
-        #         break
         
         # detection_data_json = json.dumps((supermarket_map[location], misplaced, deviations))
         detection_data_json = json.dumps((supermarket_map[location], misplaced, deviation))
