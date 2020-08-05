@@ -71,30 +71,39 @@ def on_message(client, userdata, msg):
 
         # Run YOLOv5 detections
         with torch.no_grad():
-            bboxes, im0_shape = detect(settings_dict['output_folder'], settings_dict['input_folder'], pretrained_weights=settings_dict['pretrained_weights_path'], custom_weights=settings_dict['custom_weights_path']
+            bboxes, im0_shape, pick_up_item = detect(settings_dict['output_folder'], settings_dict['input_folder'], pretrained_weights=settings_dict['pretrained_weights_path'], custom_weights=settings_dict['custom_weights_path']
                 , view_img=False, imgsz=640, device='cpu', conf_thres=0.4, iou_thres=0.5, classes=None, agnostic_nms=True, augment=True, supermarket_map=supermarket_map, correct_class_name=right_item_name, save_img=True)
 
         img_center = (im0_shape[1] / 2, im0_shape[0] / 2) # (x, y)
-
         location = data_in_dict['location']
-        misplaced = False
-        # deviations = defaultdict(lambda: [])
-        one_deviation = {}
-        for key in bboxes.keys():
-            if key != supermarket_map[location]:
-                misplaced = True
-                # if not deviation_done:
-                # for xyxy in bboxes[key]:
-                x1, y1, x2, y2 = bboxes[key][0]
-                obj_center = ((x2 + x1)/2, (y2 + y1)/2) # (x, y)
-                deviation = (obj_center[0] - img_center[0], obj_center[1] - img_center[1]) # (x, y)
-                # deviations[key].append(deviation)
-                one_deviation[key] = deviation
-                break
+
+        if pick_up_item is None:
+            misplaced = False
+        else:
+            misplaced = True
+            label, x1, y1, x2, y2 = pick_up_item
+            deviation = {}
+            obj_center = ((x2 + x1)/2, (y2 + y1)/2) # (x, y)
+            # deviations[key].append(deviation)
+            deviation[label] = (obj_center[0] - img_center[0], obj_center[1] - img_center[1]) # (x, y)
+        # for key in bboxes.keys():
+        #     if key != supermarket_map[location]:
+        #         misplaced = True
+        #         # if not deviation_done:
+        #         # for xyxy in bboxes[key]:
+        #         # x1, y1, x2, y2 = bboxes[key][0]
+        #         x1 = pick_up_item[0]
+        #         y1 = pick_up_item[1]
+        #         x2 = pick_up_item[2]
+        #         y2 = pick_up_item[3]
+        #         obj_center = ((x2 + x1)/2, (y2 + y1)/2) # (x, y)
+        #         deviation = (obj_center[0] - img_center[0], obj_center[1] - img_center[1]) # (x, y)
+        #         # deviations[key].append(deviation)
+        #         deviation[key] = deviation
+        #         break
         
-        # TODO: misplaced vs OOS
         # detection_data_json = json.dumps((supermarket_map[location], misplaced, deviations))
-        detection_data_json = json.dumps((supermarket_map[location], misplaced, one_deviation))
+        detection_data_json = json.dumps((supermarket_map[location], misplaced, deviation))
         client.publish('capstone/detection', detection_data_json)
         gui_data_json = json.dumps((supermarket_map[location], misplaced, bboxes))
         client.publish('capstone/gui', gui_data_json)

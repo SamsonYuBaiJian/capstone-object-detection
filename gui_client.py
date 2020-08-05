@@ -68,31 +68,29 @@ def barcode_scanner(img_path, label, barcode_map):
 
 
 def gui(notification_q, info_q):
-    def test(root, info_q, input_img_label, pred_img_label, descrip_frame, status_label, barcode_map):
+    def test(root, max_size, info_q, input_img_label, pred_img_label, descrip_frame, status_label, barcode_map):
         try:
             data = info_q.get(0)
             descrip_frame.pack(side='bottom')
             actual_item = data[0]
             h, w, _ = np.asarray(Image.open('./inference/inputs/image.jpg')).shape
-            screen_width = 1536
-            pad_width = 30
-            root.geometry('{}x{}'.format(w * 2 + pad_width, h + 50))
             # input_img = ImageTk.PhotoImage(Image.open('./inference/inputs/image.jpg'))
             input_img = Image.fromarray(barcode_scanner(img_path = './inference/inputs/image.jpg', label=actual_item, barcode_map=barcode_map), 'RGB')
             pred_img = Image.open('./inference/outputs/image.jpg')
-            if w * 2 + pad_width > screen_width:
+            max_width = max_size[0]
+            pad_width = 30
+            if w * 2 + pad_width > max_width:
                 # make sure image does not go out of screen
-                root.geometry('{}x{}'.format(screen_width, h))
-                max_width = int(np.floor((screen_width - pad_width) / 2))
+                max_width = int(np.floor((max_width - pad_width) / 2))
                 input_img = input_img.resize((max_width, int(h * max_width / w)))
                 pred_img = pred_img.resize((max_width, int(h * max_width / w)))
-                root.geometry('{}x{}'.format(screen_width, int(h * max_width / w) + 50))
             input_img = ImageTk.PhotoImage(input_img)
             pred_img = ImageTk.PhotoImage(pred_img)
             input_img_label.configure(image=input_img)
             input_img_label.image = input_img
             pred_img_label.configure(image=pred_img)
             pred_img_label.image = pred_img
+
             misplaced = data[1]
             if misplaced:
                 text = 'misplaced item(s):'
@@ -108,22 +106,27 @@ def gui(notification_q, info_q):
                 status_label['text'] = "{} {}".format(total_count, text)
             else:
                 if len(data[2].keys()) > 0:
+                    # for misplaced items
                     status_label['text'] = 'No misplaced items!'
                 else:
+                    # for OOS items
                     status_label['text'] =  '{} is out of stock!'.format(actual_item)
-            root.after(5, test, root, info_q, input_img_label, pred_img_label, descrip_frame, status_label, barcode_map)
+            root.after(5, test, root, max_size, info_q, input_img_label, pred_img_label, descrip_frame, status_label, barcode_map)
         except queue.Empty:
-            root.after(5, test, root, info_q, input_img_label, pred_img_label, descrip_frame, status_label, barcode_map)
+            root.after(5, test, root, max_size, info_q, input_img_label, pred_img_label, descrip_frame, status_label, barcode_map)
+
 
     def start_robot(root, start_button, notification_q, info_q, input_img_label, pred_img_label, descrip_frame, barcode_map):
         start_button.destroy()
         descrip_frame['highlightbackground'] = "black"
         descrip_frame['highlightthickness'] = 4
         notification_q.put('START')
-        root.attributes('-zoomed', True)
+        max_size = root.maxsize()
+        root.geometry('{}x{}'.format(max_size[0], max_size[1]))
         text_label = Label(descrip_frame, text='Starting check for misplaced items...', height=5, font=(None, 20), bg='white')
         text_label.pack()
-        root.after(5, test, root, info_q, input_img_label, pred_img_label, descrip_frame, text_label, barcode_map)
+        root.after(5, test, root, max_size, info_q, input_img_label, pred_img_label, descrip_frame, text_label, barcode_map)
+
 
     root = Tk()
     root.geometry('600x250')
@@ -211,7 +214,7 @@ def main(notification_q, info_q):
     while True:
         try:
             notify = notification_q.get(0)
-            print(notify)
+            client.publish('capstone/notify', notify)
         except queue.Empty:
             pass
 
