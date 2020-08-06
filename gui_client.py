@@ -61,8 +61,7 @@ def barcode_scanner(img_path, label, barcode_map):
         break    
     
     if len(barcodeDetected) == 0:
-        label = "Barcode detected: " + label
-        cv2.putText(image, label, (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
+        cv2.putText(image, label.capitalize(), (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
 
     return image
 
