@@ -53,7 +53,7 @@ def barcode_scanner(img_path, label, barcode_map):
                 cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
 
                 text = barcode_label
-                cv2.putText(image, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
+                cv2.putText(image, text.capitalize(), (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
             except KeyError:
                 continue
         else:
@@ -227,6 +227,7 @@ def main(notification_q, info_q):
         try:
             notify = notification_q.get(0)
             client.publish('capstone/notify', notify)
+            print(notify)
         except queue.Empty:
             pass
 
