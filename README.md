@@ -2,7 +2,8 @@
 YOLOv5 server for SUTD Capstone project
 
 ## Setup
-`pip3 install -r requirements.txt`
+1. `pip3 install -r requirements.txt`.
+2. Get the custom weights for YOLOv5 at https://drive.google.com/file/d/1czULVB0CeVR5qU607mvviR7lScTo_lRF/view?usp=sharing.
 
 ## Instructions
 1. Run `sudo service mosquitto start` on server.

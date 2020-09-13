@@ -4,4 +4,4 @@ barcode_map={'banana': 11, 'apple': 12, 'polo': 21, 'mnm': 22}
 input_folder=./inference/inputs/
 output_folder=./inference/outputs/
 pretrained_weights_path=./weights/yolov5s.pt
-custom_weights_path=./weights/polo_mnm_tictac_last_Rotate.pt
+custom_weights_path=./weights/custom.pt
